@@ -305,7 +305,9 @@ function getCanvasBlob(fmt) {
         const img = new Image();
         img.onload = () => resolve(img);
         img.onerror = () => resolve(null);
-        const svg = color ? svgText.replace(/currentColor/g, color) : svgText;
+        let svg = svgText;
+        if (color) svg = svg.replace(/currentColor/g, color);
+        svg = svg.replace("<svg", '<svg xmlns="http://www.w3.org/2000/svg"');
         img.src = 'data:image/svg+xml,' + encodeURIComponent(svg);
       });
     }
