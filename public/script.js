@@ -276,20 +276,21 @@ function getCanvasBlob(fmt) {
       let bbx = x + 6, bby = oy + 36;
       const ratingEl = el.querySelector(".badge-rating");
       if (ratingEl) {
+        const color = getComputedStyle(ratingEl).color;
         const svgText = ratingEl.innerHTML;
-        const img = await svgToImage(svgText);
+        const img = await svgToImage(svgText, color);
         if (img) {
           const rw = Math.min(img.naturalWidth * (12 / img.naturalHeight), iw - 12);
-          const rh = 12;
-          ctx.drawImage(img, bbx, bby, rw, rh);
+          ctx.drawImage(img, bbx, bby, rw, 12);
           bbx += rw + 6;
         }
       }
       const icons = el.querySelectorAll(".badge");
       if (icons.length) {
         for (const icon of icons) {
+          const color = getComputedStyle(icon).color;
           const svgText = icon.innerHTML;
-          const img = await svgToImage(svgText);
+          const img = await svgToImage(svgText, color);
           if (img) {
             ctx.drawImage(img, bbx, bby, 14, 14);
             bbx += 18;
@@ -299,12 +300,13 @@ function getCanvasBlob(fmt) {
       ctx.restore();
     }
 
-    function svgToImage(svgText) {
+    function svgToImage(svgText, color) {
       return new Promise(resolve => {
         const img = new Image();
         img.onload = () => resolve(img);
         img.onerror = () => resolve(null);
-        img.src = 'data:image/svg+xml,' + encodeURIComponent(svgText);
+        const svg = color ? svgText.replace(/currentColor/g, color) : svgText;
+        img.src = 'data:image/svg+xml,' + encodeURIComponent(svg);
       });
     }
 
