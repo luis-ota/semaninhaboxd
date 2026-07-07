@@ -254,7 +254,7 @@ function getCanvasBlob(fmt) {
       if (posterImg && posterImg.complete && posterImg.naturalWidth > 0) {
         ctx.drawImage(posterImg, x, y, iw, ih);
       }
-      const oh = 72;
+      const oh = 50;
       const oy = y + ih - oh;
       ctx.save();
       ctx.fillStyle = "rgba(0,0,0,0.78)";
@@ -264,25 +264,25 @@ function getCanvasBlob(fmt) {
         const t = overlayEl.querySelector(".title")?.textContent || "";
         const m = overlayEl.querySelector(".meta")?.textContent || "";
         ctx.fillStyle = "#fff";
-        ctx.font = "bold 13px sans-serif";
+        ctx.font = "bold 12px sans-serif";
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
-        ctx.fillText(t.substring(0, 30), x + 6, oy + 4);
+        ctx.fillText(t.substring(0, 30), x + 6, oy + 3);
         ctx.fillStyle = "#9ab";
-        ctx.font = "10px sans-serif";
-        ctx.fillText(m, x + 6, oy + 20);
+        ctx.font = "9px sans-serif";
+        ctx.fillText(m, x + 6, oy + 16);
       }
       // Render SVG badges in the overlay
-      let bbx = x + 6, bby = oy + 36;
+      let bbx = x + 6, bby = oy + 30;
       const ratingEl = el.querySelector(".badge-rating");
       if (ratingEl) {
         const color = getComputedStyle(ratingEl).color;
         const svgText = ratingEl.innerHTML;
         const img = await svgToImage(svgText, color);
         if (img) {
-          const rw = Math.min(img.naturalWidth * (12 / img.naturalHeight), iw - 12);
-          ctx.drawImage(img, bbx, bby, rw, 12);
-          bbx += rw + 6;
+          const rw = Math.min(img.naturalWidth * (9 / img.naturalHeight), iw - 12);
+          ctx.drawImage(img, bbx, bby, rw, 9);
+          bbx += rw + 4;
         }
       }
       const icons = el.querySelectorAll(".badge");
@@ -292,8 +292,8 @@ function getCanvasBlob(fmt) {
           const svgText = icon.innerHTML;
           const img = await svgToImage(svgText, color);
           if (img) {
-            ctx.drawImage(img, bbx, bby, 14, 14);
-            bbx += 18;
+            ctx.drawImage(img, bbx, bby, 11, 11);
+            bbx += 12;
           }
         }
       }
