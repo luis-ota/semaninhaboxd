@@ -390,7 +390,7 @@ body {
   position: absolute;
   top: 2px;
   right: 3px;
-  background: rgba(0,0,0,0.70);
+  background: rgba(0,0,0,0.50);
   color: var(--green);
   padding: 1px 4px;
   border-radius: 3px;
