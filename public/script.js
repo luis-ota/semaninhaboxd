@@ -240,7 +240,6 @@ function smartlinkClick() {
 async function downloadImage(fmt) {
   smartlinkClick();
   try {
-  try {
     const blob = await getCanvasBlob(fmt);
     const a = document.createElement("a");
     a.download = `boxdgrid.${fmt}`;
