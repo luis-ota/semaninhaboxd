@@ -87,13 +87,14 @@ function starSVG(n) {
   if (!n) return "";
   const full = Math.floor(n);
   const half = n % 1 >= 0.5;
-  const w = (full + (half ? 1 : 0)) * 16;
-  let svg = `<svg viewBox="0 0 ${w} 15" fill="currentColor">`;
+  const spacing = 12;
+  const w = (full + (half ? 1 : 0)) * spacing;
+  let svg = `<svg viewBox="0 0 ${w} 12" fill="currentColor">`;
   for (let i = 0; i < full; i++) {
-    svg += `<path transform="translate(${i * 16}, 0)" fill-rule="evenodd" d="${STAR_PATH}"/>`;
+    svg += `<path transform="translate(${i * spacing}, 0) scale(0.8)" fill-rule="evenodd" d="${STAR_PATH}"/>`;
   }
   if (half) {
-    svg += `<path transform="translate(${full * 16}, 0)" d="M.71 11.99h1.31L11 0H9.7zm1.1-6h1.6V0H2.02L.42 1.07V2.4l1.4-.87zm5.29 6h4.78v-1.16H9.65l.99-.97c.71-.68 1.19-1.2 1.19-2 0-1.09-.75-1.86-2.2-1.86-1.42 0-2.32.79-2.4 2.23h1.45c.09-.73.4-1.04.89-1.04.47 0 .71.28.71.74 0 .52-.39.91-1 1.54l-2.18 2.3z"/>`;
+    svg += `<path transform="translate(${full * spacing}, 0) scale(0.8)" d="M.71 11.99h1.31L11 0H9.7zm1.1-6h1.6V0H2.02L.42 1.07V2.4l1.4-.87zm5.29 6h4.78v-1.16H9.65l.99-.97c.71-.68 1.19-1.2 1.19-2 0-1.09-.75-1.86-2.2-1.86-1.42 0-2.32.79-2.4 2.23h1.45c.09-.73.4-1.04.89-1.04.47 0 .71.28.71.74 0 .52-.39.91-1 1.54l-2.18 2.3z"/>`;
   }
   svg += "</svg>";
   return svg;
@@ -160,38 +161,51 @@ function getCanvasBlob(fmt) {
         if (img && img.complete && img.naturalWidth > 0) {
           ctx.drawImage(img, x, y, iw, ih);
         }
-        const badges = el.querySelectorAll(".badge-row .badge, .badge-rating");
-        const iconMap = { rewatch: "\u21BB", like: "\u2665", review: "\u270E" };
-        badges.forEach(b => {
-          const rect = b.getBoundingClientRect();
-          const gridRect = document.getElementById("grid").getBoundingClientRect();
-          const bx = rect.left - gridRect.left + x;
-          const by = rect.top - gridRect.top + y;
+        // Render badges at fixed positions (no DOM dependency)
+        const ratingEl = el.querySelector(".badge-rating");
+        if (ratingEl) {
+          const icon = ratingEl.dataset.icon || "";
+          const r = parseFloat(icon.slice(7)) || 0;
           ctx.save();
           ctx.globalAlpha = 0.85;
-          ctx.fillStyle = b.classList.contains("badge-rating") ? "#00e054" : "#000";
+          ctx.fillStyle = "#00e054";
+          const rw = 14 + Math.min(r, 5) * 10;
           ctx.beginPath();
-          ctx.roundRect(bx, by, rect.width, rect.height, 4);
+          ctx.roundRect(x + iw - rw - 4, y + 4, rw, 14, 3);
           ctx.fill();
           ctx.globalAlpha = 1;
-          const icon = b.dataset.icon || "";
-          if (icon.startsWith("rating-")) {
-            const r = parseFloat(icon.slice(7));
-            ctx.fillStyle = "#fff";
-            ctx.font = `bold ${Math.max(9, rect.height - 5)}px sans-serif`;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(fmtRating(r), bx + rect.width / 2, by + rect.height / 2);
-          } else {
-            ctx.fillStyle = b.classList.contains("badge-rewatch") ? "#678" : b.classList.contains("badge-like") ? "#ff8000" : b.classList.contains("badge-review") ? "#40bcf4" : "#fff";
-            ctx.font = `bold ${Math.max(10, rect.height - 4)}px sans-serif`;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            const ch = icon ? iconMap[icon] : "";
-            if (ch) ctx.fillText(ch, bx + rect.width / 2, by + rect.height / 2);
-          }
+          ctx.fillStyle = "#fff";
+          ctx.font = "bold 10px sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(fmtRating(r), x + iw - rw / 2 - 4, y + 11);
           ctx.restore();
-        });
+        }
+        const badgeIcons = el.querySelectorAll(".badge-row .badge");
+        if (badgeIcons.length) {
+          const iconOrder = ["rewatch", "like", "review"];
+          const iconMap = { rewatch: "\u21BB", like: "\u2665", review: "\u270E" };
+          const colorMap = { rewatch: "#678", like: "#ff8000", review: "#40bcf4" };
+          let bx = x + 4;
+          iconOrder.forEach(type => {
+            const be = el.querySelector(`.badge-${type}`);
+            if (!be) return;
+            ctx.save();
+            ctx.globalAlpha = 0.85;
+            ctx.fillStyle = "#000";
+            ctx.beginPath();
+            ctx.roundRect(bx, y + 4, 16, 16, 3);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = colorMap[type];
+            ctx.font = "bold 12px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(iconMap[type], bx + 8, y + 12);
+            ctx.restore();
+            bx += 18;
+          });
+        }
         const overlay = el.querySelector(".overlay");
         if (overlay) {
           const t = overlay.querySelector(".title")?.textContent || "";
