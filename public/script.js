@@ -222,10 +222,11 @@ function renderGrid(items, n) {
       <figure class="grid-item">
         <img src="${item.posterUrl}" alt="${title}" loading="lazy" crossorigin="anonymous"
           onerror="this.outerHTML='<div class=grid-item style=display:flex;align-items:center;justify-content:center;height:100%;background:#111;color:#567;font-size:.65rem;padding:8px;text-align:center>${title}</div>'">
+        ${starsSvg ? `<div class="badge-rating" data-icon="rating-${item.rating}">${starsSvg}</div>` : ""}
+        ${badges.length ? `<div class="badge-row">${badges.join("")}</div>` : ""}
         <figcaption class="overlay">
           <div class="title">${title}</div>
           <div class="meta">${item.year}${item._director ? " \u00B7 " + escaped(item._director) : ""}</div>
-          ${starsSvg || badges.length ? `<div class="badge-bar">${starsSvg}${badges.join("")}</div>` : ""}
         </figcaption>
       </figure>
     `;
