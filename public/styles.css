@@ -115,20 +115,32 @@ body {
 
 .search-inner {
   display: flex;
-  gap: 8px;
-  padding: 6px;
+  gap: 6px;
+  padding: 5px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r);
   align-items: center;
 }
 
+.search-inner .btn {
+  flex-shrink: 0;
+  padding: 0 14px;
+  font-size: 13px;
+  height: 40px;
+}
+
 .at {
   color: var(--faint);
-  font-size: 14px;
-  padding-left: 10px;
+  font-size: 13px;
+  padding-left: 8px;
   white-space: nowrap;
   flex-shrink: 0;
+  display: none;
+}
+
+@media (min-width: 400px) {
+  .at { display: inline; }
 }
 
 .search-inner input {
