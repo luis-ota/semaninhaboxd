@@ -388,7 +388,7 @@ body {
 
 .badge-rating {
   position: absolute;
-  top: 3px;
+  top: 2px;
   right: 3px;
   background: rgba(0,0,0,0.70);
   color: var(--green);
@@ -400,6 +400,14 @@ body {
   line-height: 1;
   max-width: calc(100% - 24px);
   overflow: hidden;
+}
+
+@media (max-width: 359px) {
+  .badge-rating {
+    top: 17px;
+    right: auto;
+    left: 0;
+  }
 }
 
 .badge-rating svg {
