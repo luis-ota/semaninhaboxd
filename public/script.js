@@ -333,13 +333,17 @@ function getCanvasBlob(fmt) {
 }
 
 const SMARTLINK = "https://www.effectivecpmnetwork.com/tfm84s4e6a?key=a0917091db28caa0a680bad911c9473b";
-const SL_KEY = "boxdgrid_sl";
+let smartlinkReady = true;
 
 function smartlinkClick() {
-  if (!localStorage.getItem(SL_KEY)) {
-    localStorage.setItem(SL_KEY, "1");
+  if (smartlinkReady) {
+    smartlinkReady = false;
     window.open(SMARTLINK, "_blank");
   }
+}
+
+function resetSmartlink() {
+  smartlinkReady = true;
 }
 
 async function downloadImage(fmt) {
@@ -372,7 +376,6 @@ async function copyImage() {
 }
 
 async function shareImage() {
-  smartlinkClick();
   try {
     const period = document.getElementById("period-select").value;
     const periodTxt = period === "all" ? t("allTime") : t("periodPrefix") + " " + t("periodLabel")[period];
@@ -403,6 +406,7 @@ async function generateGrid() {
     return;
   }
 
+  resetSmartlink();
   error.classList.remove("visible");
   output.classList.remove("visible");
   loading.classList.add("visible");
