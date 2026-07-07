@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>boxdgrid — colagem de filmes do Letterboxd</title>
+  <meta name="description" content="Transforme seu diário do Letterboxd em uma colagem personalizada de filmes. Monte grids dos filmes que você assistiu, com nota, like, resenha e rewatch.">
+  <meta name="keywords" content="letterboxd, colagem, filmes, grid, cine, cinema, movie collage, letterboxd grid, boxdgrid">
+  <meta name="author" content="boxdgrid">
+  <meta name="theme-color" content="#14181c">
+  <link rel="canonical" href="https://boxdgrid.app/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="boxdgrid — colagem de filmes do Letterboxd">
+  <meta property="og:description" content="Transforme seu diário do Letterboxd em uma colagem personalizada de filmes.">
+  <meta property="og:url" content="https://boxdgrid.app/">
+  <meta property="og:site_name" content="boxdgrid">
+  <meta property="og:locale" content="pt_BR">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="boxdgrid — colagem de filmes do Letterboxd">
+  <meta name="twitter:description" content="Transforme seu diário do Letterboxd em uma colagem personalizada de filmes.">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='8' cy='16' r='5' fill='%2300e054'/%3E%3Ccircle cx='16' cy='8' r='5' fill='%2340bcf4'/%3E%3Ccircle cx='24' cy='16' r='5' fill='%23ff8000'/%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='8' cy='16' r='5' fill='%2300e054'/%3E%3Ccircle cx='16' cy='8' r='5' fill='%2340bcf4'/%3E%3Ccircle cx='24' cy='16' r='5' fill='%23ff8000'/%3E%3C/svg%3E">
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+
+  <link rel="stylesheet" href="/styles.css?v=3">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "boxdgrid",
+    "url": "https://boxdgrid.app/",
+    "description": "Transforme seu diário do Letterboxd em uma colagem personalizada de filmes.",
+    "applicationCategory": "Multimedia",
+    "operatingSystem": "Any",
+    "browserRequirements": "Requires JavaScript",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "BRL"
+    },
+    "author": {
+      "@type": "Organization",
+      "name": "boxdgrid"
+    }
+  }
+  </script>
+</head>
+<body>
+<div class="container">
+  <header class="header">
+    <div class="logo" aria-label="boxdgrid">
+      <span class="dot g"></span>
+      <span class="dot b"></span>
+      <span class="dot o"></span>
+    </div>
+    <span class="brand" aria-hidden="true">boxdgrid</span>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Colagem de <span>filmes</span></h1>
+      <p>Insira seu username do Letterboxd e monte uma colagem dos filmes que você assistiu.</p>
+
+      <form class="search" id="search-form" action="javascript:">
+        <div class="search-inner">
+          <span class="at">letterboxd.com/</span>
+          <input type="text" id="username-input" placeholder="username" autocomplete="off" spellcheck="false" autofocus>
+          <button class="btn primary" id="generate-btn" type="submit">Gerar</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="options" aria-label="Opções da colagem">
+      <div class="opt">
+        <label for="period-select">Período</label>
+        <select id="period-select">
+          <option value="7">7 dias</option>
+          <option value="30">30 dias</option>
+          <option value="90">3 meses</option>
+          <option value="180">6 meses</option>
+          <option value="365">1 ano</option>
+          <option value="all" selected>Todo histórico</option>
+        </select>
+      </div>
+      <div class="opt">
+        <label for="group-select">Agrupar</label>
+        <select id="group-select">
+          <option value="film" selected>Filme</option>
+          <option value="director">Diretor(a)</option>
+        </select>
+      </div>
+      <div class="opt">
+        <label for="grid-select">Grid</label>
+        <select id="grid-select">
+          <option value="2">2×2</option>
+          <option value="3">3×3</option>
+          <option value="4" selected>4×4</option>
+          <option value="5">5×5</option>
+          <option value="6">6×6</option>
+          <option value="7">7×7</option>
+          <option value="8">8×8</option>
+          <option value="9">9×9</option>
+          <option value="10">10×10</option>
+        </select>
+      </div>
+      <div class="opt full">
+        <label>Mostrar</label>
+        <div class="tags" id="show-tags">
+          <label class="tag"><input type="checkbox" value="rating" checked><span>Nota</span></label>
+          <label class="tag"><input type="checkbox" value="like" checked><span>Like</span></label>
+          <label class="tag"><input type="checkbox" value="review" checked><span>Resenha</span></label>
+          <label class="tag"><input type="checkbox" value="rewatch" checked><span>Reviu</span></label>
+        </div>
+      </div>
+    </section>
+
+    <div class="loading" id="loading" role="status" aria-live="polite">
+      <div class="spinner"></div>
+      <p>Buscando seus filmes...</p>
+    </div>
+
+    <div class="error" id="error" role="alert"></div>
+
+    <section class="output" id="output" aria-label="Colagem gerada">
+      <div class="grid-wrap" id="grid-wrap">
+        <figure class="grid" id="grid"></figure>
+      </div>
+      <div class="bar-top">
+        <span class="info" id="grid-info"></span>
+      </div>
+      <div class="bar" role="toolbar" aria-label="Ações da colagem">
+        <button class="btn primary" id="download-png" aria-label="Baixar como PNG">PNG</button>
+        <button class="btn secondary" id="download-jpg" aria-label="Baixar como JPG">JPG</button>
+        <button class="btn secondary" id="copy-btn" aria-label="Copiar imagem">Copiar</button>
+        <button class="btn secondary" id="share-btn" aria-label="Compartilhar">Compartilhar</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer class="footer">
+  <span>boxdgrid</span>
+  <span class="sep" aria-hidden="true">·</span>
+  <a href="https://letterboxd.com/" target="_blank" rel="noopener">Letterboxd</a>
+  <span class="sep" aria-hidden="true">·</span>
+  <span>não afiliado</span>
+</footer>
+
+<script src="/script.js?v=3" defer></script>
+</body>
+</html>
