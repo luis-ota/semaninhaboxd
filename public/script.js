@@ -381,7 +381,7 @@ async function shareImage() {
   try {
     const period = document.getElementById("period-select").value;
     const periodTxt = period === "all" ? t("allTime") : t("periodPrefix") + " " + t("periodLabel")[period];
-    const shareTxt = t("shareText") + " (" + periodTxt + ") — " + t("siteLink");
+    const shareTxt = t("shareText") + " (" + periodTxt + ") " + t("siteLink");
     const blob = await getCanvasBlob("png");
     const file = new File([blob], "boxdgrid.png", { type: "image/png" });
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
