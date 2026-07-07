@@ -430,8 +430,7 @@ body {
 }
 
 .badge svg {
-  width: 10px;
-  height: 10px;
+  height: 9px;
   display: block;
 }
 
