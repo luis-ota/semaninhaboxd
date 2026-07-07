@@ -68,6 +68,14 @@ Bun.serve({
   async fetch(req) {
     const url = new URL(req.url);
 
+    // Block direct API access from external origins
+    const ALLOWED_ORIGINS = ["https://boxdgrid.wired.rs", "http://localhost:3033", "http://localhost"];
+    const origin = req.headers.get("Origin") || req.headers.get("Referer") || "";
+    const allowed = ALLOWED_ORIGINS.some(o => origin.startsWith(o));
+    if (!allowed && url.pathname.startsWith("/api/")) {
+      return new Response("Forbidden", { status: 403 });
+    }
+
     // Proxy Letterboxd RSS — cached 5 min
     if (url.pathname === "/api/rss") {
       const username = url.searchParams.get("username");
