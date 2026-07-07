@@ -26,7 +26,7 @@
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='8' cy='16' r='5' fill='%2300e054'/%3E%3Ccircle cx='16' cy='8' r='5' fill='%2340bcf4'/%3E%3Ccircle cx='24' cy='16' r='5' fill='%23ff8000'/%3E%3C/svg%3E">
   <link rel="sitemap" type="application/xml" href="/sitemap.xml">
 
-  <link rel="stylesheet" href="/styles.css?v=6">
+  <link rel="stylesheet" href="/styles.css?v=7">
 
   <script type="application/ld+json">
   {
@@ -59,43 +59,44 @@
       <span class="dot o"></span>
     </div>
     <span class="brand" aria-hidden="true">boxdgrid</span>
+    <button class="lang-btn" id="lang-btn" data-t="btn">EN</button>
   </header>
 
   <main>
     <section class="hero">
-      <h1>Colagem de <span>filmes</span></h1>
-      <p>Insira seu username do Letterboxd e monte uma colagem dos filmes que você assistiu.</p>
+      <h1 data-t="heroTitle" data-fallback="Colagem de filmes">Colagem de <span>filmes</span></h1>
+      <p data-t="heroDesc" data-fallback="Insira seu username do Letterboxd e monte uma colagem dos filmes que você assistiu.">Insira seu username do Letterboxd e monte uma colagem dos filmes que você assistiu.</p>
 
       <form class="search" id="search-form" action="javascript:">
         <div class="search-inner">
           <span class="at">letterboxd.com/</span>
           <input type="text" id="username-input" placeholder="username" autocomplete="off" spellcheck="false" autofocus>
-          <button class="btn primary" id="generate-btn" type="submit">Gerar</button>
+          <button class="btn primary" id="generate-btn" type="submit" data-t="generateBtn" data-fallback="Gerar">Gerar</button>
         </div>
       </form>
     </section>
 
     <section class="options" aria-label="Opções da colagem">
       <div class="opt">
-        <label for="period-select">Período</label>
+        <label for="period-select" data-t="periodLabel2" data-fallback="Período">Período</label>
         <select id="period-select">
-          <option value="7">7 dias</option>
-          <option value="30">30 dias</option>
-          <option value="90">3 meses</option>
-          <option value="180">6 meses</option>
-          <option value="365">1 ano</option>
-          <option value="all" selected>Todo histórico</option>
+          <option value="7" data-t-period="7">7 dias</option>
+          <option value="30" data-t-period="30">30 dias</option>
+          <option value="90" data-t-period="90">3 meses</option>
+          <option value="180" data-t-period="180">6 meses</option>
+          <option value="365" data-t-period="365">1 ano</option>
+          <option value="all" selected data-t-period="all">Todo histórico</option>
         </select>
       </div>
       <div class="opt">
-        <label for="group-select">Agrupar</label>
+        <label for="group-select" data-t="groupLabel" data-fallback="Agrupar">Agrupar</label>
         <select id="group-select">
-          <option value="film" selected>Filme</option>
-          <option value="director">Diretor(a)</option>
+          <option value="film" selected data-t="groupFilm" data-fallback="Filme">Filme</option>
+          <option value="director" data-t="groupDir" data-fallback="Diretor(a)">Diretor(a)</option>
         </select>
       </div>
       <div class="opt">
-        <label for="grid-select">Grid</label>
+        <label for="grid-select" data-t="gridLabel" data-fallback="Grid">Grid</label>
         <select id="grid-select">
           <option value="2">2×2</option>
           <option value="3">3×3</option>
@@ -109,19 +110,19 @@
         </select>
       </div>
       <div class="opt full">
-        <label>Mostrar</label>
+        <label data-t="showLabel" data-fallback="Mostrar">Mostrar</label>
         <div class="tags" id="show-tags">
-          <label class="tag"><input type="checkbox" value="rating" checked><span>Nota</span></label>
-          <label class="tag"><input type="checkbox" value="like" checked><span>Like</span></label>
-          <label class="tag"><input type="checkbox" value="review" checked><span>Resenha</span></label>
-          <label class="tag"><input type="checkbox" value="rewatch" checked><span>Reviu</span></label>
+          <label class="tag"><input type="checkbox" value="rating" checked><span data-t="showRating" data-fallback="Nota">Nota</span></label>
+          <label class="tag"><input type="checkbox" value="like" checked><span data-t="showLike" data-fallback="Like">Like</span></label>
+          <label class="tag"><input type="checkbox" value="review" checked><span data-t="showReview" data-fallback="Resenha">Resenha</span></label>
+          <label class="tag"><input type="checkbox" value="rewatch" checked><span data-t="showRewatch" data-fallback="Reviu">Reviu</span></label>
         </div>
       </div>
     </section>
 
     <div class="loading" id="loading" role="status" aria-live="polite">
       <div class="spinner"></div>
-      <p>Buscando seus filmes...</p>
+      <p data-t="loading">Buscando seus filmes...</p>
     </div>
 
     <div class="error" id="error" role="alert"></div>
@@ -134,10 +135,10 @@
         <span class="info" id="grid-info"></span>
       </div>
       <div class="bar" role="toolbar" aria-label="Ações da colagem">
-        <button class="btn primary" id="download-png" aria-label="Baixar como PNG">PNG</button>
-        <button class="btn secondary" id="download-jpg" aria-label="Baixar como JPG">JPG</button>
-        <button class="btn secondary" id="copy-btn" aria-label="Copiar imagem">Copiar</button>
-        <button class="btn secondary" id="share-btn" aria-label="Compartilhar">Compartilhar</button>
+        <button class="btn primary" id="download-png" aria-label="Baixar como PNG" data-t="pngBtn" data-fallback="PNG">PNG</button>
+        <button class="btn secondary" id="download-jpg" aria-label="Baixar como JPG" data-t="jpgBtn" data-fallback="JPG">JPG</button>
+        <button class="btn secondary" id="copy-btn" aria-label="Copiar imagem" data-t="copyBtn" data-fallback="Copiar">Copiar</button>
+        <button class="btn secondary" id="share-btn" aria-label="Compartilhar" data-t="shareBtn" data-fallback="Compartilhar">Compartilhar</button>
       </div>
     </section>
   </main>
@@ -148,9 +149,9 @@
   <span class="sep" aria-hidden="true">·</span>
   <a href="https://letterboxd.com/" target="_blank" rel="noopener">Letterboxd</a>
   <span class="sep" aria-hidden="true">·</span>
-  <span>não afiliado</span>
+  <span data-t="notAffiliated" data-fallback="não afiliado">não afiliado</span>
 </footer>
 
-<script src="/script.js?v=6"></script>
+<script src="/script.js?v=7"></script>
 </body>
 </html>

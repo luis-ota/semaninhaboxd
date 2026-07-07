@@ -66,6 +66,25 @@ body {
   letter-spacing: -0.5px;
 }
 
+.lang-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--soft);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: auto;
+  transition: color 0.15s, border-color 0.15s;
+  line-height: 1.4;
+}
+
+.lang-btn:hover {
+  color: var(--green);
+  border-color: var(--green);
+}
+
 /* ── Hero ── */
 
 .hero {
@@ -346,57 +365,39 @@ body {
   display: block;
 }
 
-.badge-rating {
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  background: rgba(0,0,0,0.75);
-  color: var(--green);
-  padding: 2px 4px;
-  border-radius: 3px;
-  pointer-events: none;
+
+
+
+
+
+
+
+
+
+
+.badge-rewatch { color: #678; }
+.badge-like { color: var(--orange); }
+.badge-review { color: var(--blue); }
+
+.badge-bar {
   display: flex;
   align-items: center;
-  line-height: 1;
-  max-width: calc(100% - 30px);
-  overflow: hidden;
+  gap: 4px;
+  margin-top: 4px;
+  flex-wrap: wrap;
 }
 
-.badge-rating svg {
+.badge-bar svg {
   display: block;
-  height: 8px;
+  height: 12px;
 }
 
-.badge-row {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  display: flex;
-  gap: 2px;
-  pointer-events: none;
-  max-width: calc(100% - 50px);
-  overflow: hidden;
+.badge-bar .badge svg {
+  height: 12px;
+  width: 12px;
 }
 
-.badge {
-  width: 16px;
-  height: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 3px;
-  pointer-events: none;
-  background: rgba(0,0,0,0.65);
-}
-
-.badge svg {
-  width: 10px;
-  height: 10px;
-  display: block;
-}
-
-
-
+.badge-rating { color: var(--green); }
 .badge-rewatch { color: #678; }
 .badge-like { color: var(--orange); }
 .badge-review { color: var(--blue); }
@@ -406,15 +407,12 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(transparent 30%, rgba(0,0,0,0.88));
-  padding: 24px 8px 6px;
-  opacity: 0;
-  transition: opacity 0.2s;
+  background: linear-gradient(transparent 10%, rgba(0,0,0,0.92));
+  padding: 22px 6px 6px;
 }
 
-.grid-item:hover .overlay,
-.grid-item:active .overlay {
-  opacity: 1;
+.grid-item:hover .overlay {
+  padding-bottom: 6px;
 }
 
 .overlay .title {

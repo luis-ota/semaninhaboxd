@@ -1,6 +1,84 @@
 const STATE_KEY = "boxdgrid_state";
 const STATE_VER = 2;
 let cachedItems = [];
+let lang = "pt";
+
+const LANG = {
+  pt: {
+    btn: "EN",
+    heroTitle: "Colagem de filmes",
+    heroDesc: "Insira seu username do Letterboxd e monte uma colagem dos filmes que voc\u00EA assistiu.",
+    generateBtn: "Gerar",
+    periodLabel: { "7":"7 dias", "30":"30 dias", "90":"3 meses", "180":"6 meses", "365":"1 ano", "all":"todo hist\u00F3rico" },
+    periodLabel2: "Per\u00EDodo",
+    periodPrefix: "dos \u00FAltimos",
+    allTime: "de todo hist\u00F3rico",
+    shareText: "Minha colagem de filmes no Letterboxd",
+    loading: "Buscando seus filmes...",
+    loadingDir: "Buscando informa\u00E7\u00F5es dos diretores...",
+    groupLabel: "Agrupar",
+    groupFilm: "Filme",
+    groupDir: "Diretor(a)",
+    gridLabel: "Grid",
+    showLabel: "Mostrar",
+    showRating: "Nota",
+    showLike: "Like",
+    showReview: "Resenha",
+    showRewatch: "Reviu",
+    labelFilm: "filmes",
+    labelDir: "diretores",
+    errorUser: "Digite seu username do Letterboxd.",
+    errorRSS: "Usu\u00E1rio n\u00E3o encontrado ou RSS indispon\u00EDvel.",
+    errorNoDiary: "Nenhum filme no di\u00E1rio desse usu\u00E1rio.",
+    errorNoPeriod: "Nenhum filme encontrado nesse per\u00EDodo.",
+    pngBtn: "PNG",
+    jpgBtn: "JPG",
+    copyBtn: "Copiar",
+    shareBtn: "Compartilhar",
+    copied: "Copiado!",
+    copyErr: "Erro",
+    notAffiliated: "n\u00E3o afiliado",
+    siteLink: "boxdgrid.wired.rs",
+  },
+  en: {
+    btn: "PT",
+    heroTitle: "Movie collage",
+    heroDesc: "Enter your Letterboxd username and build a collage of the films you watched.",
+    generateBtn: "Generate",
+    periodLabel: { "7":"7 days", "30":"30 days", "90":"3 months", "180":"6 months", "365":"1 year", "all":"all time" },
+    periodLabel2: "Period",
+    periodPrefix: "of the last",
+    allTime: "of all time",
+    shareText: "My Letterboxd movie collage",
+    loading: "Fetching your films...",
+    loadingDir: "Looking up directors...",
+    groupLabel: "Group by",
+    groupFilm: "Film",
+    groupDir: "Director",
+    gridLabel: "Grid",
+    showLabel: "Show",
+    showRating: "Rating",
+    showLike: "Like",
+    showReview: "Review",
+    showRewatch: "Rewatch",
+    labelFilm: "films",
+    labelDir: "directors",
+    errorUser: "Enter your Letterboxd username.",
+    errorRSS: "User not found or RSS unavailable.",
+    errorNoDiary: "No diary entries for this user.",
+    errorNoPeriod: "No films found in this period.",
+    pngBtn: "PNG",
+    jpgBtn: "JPG",
+    copyBtn: "Copy",
+    shareBtn: "Share",
+    copied: "Copied!",
+    copyErr: "Error",
+    notAffiliated: "not affiliated",
+    siteLink: "boxdgrid.wired.rs",
+  },
+};
+
+function t(key) { return LANG[lang][key]; }
 
 function loadState() {
   try { return JSON.parse(localStorage.getItem(STATE_KEY)) || {}; }
@@ -12,12 +90,29 @@ function saveState(partial) {
   localStorage.setItem(STATE_KEY, JSON.stringify({ ver: STATE_VER, ...cur, ...partial }));
 }
 
+function applyLang() {
+  document.querySelectorAll("[data-t]").forEach(el => {
+    const val = t(el.dataset.t);
+    if (val) el.textContent = val;
+  });
+  document.querySelectorAll("[data-t-period]").forEach(el => {
+    const val = t("periodLabel")[el.dataset.tPeriod];
+    if (val) el.textContent = val;
+  });
+  const btn = document.getElementById("lang-btn");
+  if (btn) btn.textContent = LANG[lang].btn;
+  document.getElementById("generate-btn").textContent = t("generateBtn");
+  saveState({ lang });
+}
+
 function restoreUI() {
   const s = loadState();
   if (s.ver !== STATE_VER) {
     localStorage.removeItem(STATE_KEY);
     return;
   }
+  if (s.lang) lang = s.lang;
+  applyLang();
   if (s.username) document.getElementById("username-input").value = s.username;
   if (s.period) document.getElementById("period-select").value = s.period;
   if (s.group) document.getElementById("group-select").value = s.group;
@@ -119,19 +214,18 @@ function renderGrid(items, n) {
     const title = escaped(item.filmTitle);
     const starsSvg = show.rating ? starSVG(item.rating) : "";
     const badges = [];
-    if (show.rewatch && item.rewatch) badges.push(`<span class="badge badge-rewatch" data-icon="rewatch" title="Reassistido">${ICONS.rewatch}</span>`);
-    if (show.like && item.liked) badges.push(`<span class="badge badge-like" data-icon="like" title="Gostou">${ICONS.heart}</span>`);
-    if (show.review && item.hasReview) badges.push(`<span class="badge badge-review" data-icon="review" title="Tem resenha">${ICONS.review}</span>`);
+    if (show.rewatch && item.rewatch) badges.push(`<span class="badge badge-rewatch" data-icon="rewatch" title="revisited">${ICONS.rewatch}</span>`);
+    if (show.like && item.liked) badges.push(`<span class="badge badge-like" data-icon="like" title="liked">${ICONS.heart}</span>`);
+    if (show.review && item.hasReview) badges.push(`<span class="badge badge-review" data-icon="review" title="has review">${ICONS.review}</span>`);
 
     return `
       <figure class="grid-item">
         <img src="${item.posterUrl}" alt="${title}" loading="lazy" crossorigin="anonymous"
           onerror="this.outerHTML='<div class=grid-item style=display:flex;align-items:center;justify-content:center;height:100%;background:#111;color:#567;font-size:.65rem;padding:8px;text-align:center>${title}</div>'">
-        ${starsSvg ? `<div class="badge-rating" data-icon="rating-${item.rating}">${starsSvg}</div>` : ""}
-        ${badges.length ? `<div class="badge-row">${badges.join("")}</div>` : ""}
         <figcaption class="overlay">
           <div class="title">${title}</div>
           <div class="meta">${item.year}${item._director ? " \u00B7 " + escaped(item._director) : ""}</div>
+          ${starsSvg || badges.length ? `<div class="badge-bar">${starsSvg}${badges.join("")}</div>` : ""}
         </figcaption>
       </figure>
     `;
@@ -153,77 +247,71 @@ function getCanvasBlob(fmt) {
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, cv.width, cv.height);
 
-    function draw() {
-      els.forEach((el, i) => {
-        const col = i % cols, row = Math.floor(i / cols);
-        const x = col * (iw + gap), y = row * (ih + gap);
-        const img = el.querySelector("img");
-        if (img && img.complete && img.naturalWidth > 0) {
-          ctx.drawImage(img, x, y, iw, ih);
+    async function renderCell(el, col, row) {
+      const x = col * (iw + gap), y = row * (ih + gap);
+      const posterImg = el.querySelector("img");
+      if (posterImg && posterImg.complete && posterImg.naturalWidth > 0) {
+        ctx.drawImage(posterImg, x, y, iw, ih);
+      }
+      const oh = 72;
+      const oy = y + ih - oh;
+      ctx.save();
+      ctx.fillStyle = "rgba(0,0,0,0.78)";
+      ctx.fillRect(x, oy, iw, oh);
+      const overlayEl = el.querySelector(".overlay");
+      if (overlayEl) {
+        const t = overlayEl.querySelector(".title")?.textContent || "";
+        const m = overlayEl.querySelector(".meta")?.textContent || "";
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 13px sans-serif";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillText(t.substring(0, 30), x + 6, oy + 4);
+        ctx.fillStyle = "#9ab";
+        ctx.font = "10px sans-serif";
+        ctx.fillText(m, x + 6, oy + 20);
+      }
+      // Render SVG badges in the overlay
+      let bbx = x + 6, bby = oy + 36;
+      const ratingEl = el.querySelector(".badge-rating");
+      if (ratingEl) {
+        const svgText = ratingEl.innerHTML;
+        const img = await svgToImage(svgText);
+        if (img) {
+          const rw = Math.min(img.naturalWidth * (12 / img.naturalHeight), iw - 12);
+          const rh = 12;
+          ctx.drawImage(img, bbx, bby, rw, rh);
+          bbx += rw + 6;
         }
-        // Render badges at fixed positions (no DOM dependency)
-        const ratingEl = el.querySelector(".badge-rating");
-        if (ratingEl) {
-          const icon = ratingEl.dataset.icon || "";
-          const r = parseFloat(icon.slice(7)) || 0;
-          ctx.save();
-          ctx.globalAlpha = 0.85;
-          ctx.fillStyle = "#00e054";
-          const rw = 14 + Math.min(r, 5) * 10;
-          ctx.beginPath();
-          ctx.roundRect(x + iw - rw - 4, y + 4, rw, 14, 3);
-          ctx.fill();
-          ctx.globalAlpha = 1;
-          ctx.fillStyle = "#fff";
-          ctx.font = "bold 10px sans-serif";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(fmtRating(r), x + iw - rw / 2 - 4, y + 11);
-          ctx.restore();
+      }
+      const icons = el.querySelectorAll(".badge");
+      if (icons.length) {
+        for (const icon of icons) {
+          const svgText = icon.innerHTML;
+          const img = await svgToImage(svgText);
+          if (img) {
+            ctx.drawImage(img, bbx, bby, 14, 14);
+            bbx += 18;
+          }
         }
-        const badgeIcons = el.querySelectorAll(".badge-row .badge");
-        if (badgeIcons.length) {
-          const iconOrder = ["rewatch", "like", "review"];
-          const iconMap = { rewatch: "\u21BB", like: "\u2665", review: "\u270E" };
-          const colorMap = { rewatch: "#678", like: "#ff8000", review: "#40bcf4" };
-          let bx = x + 4;
-          iconOrder.forEach(type => {
-            const be = el.querySelector(`.badge-${type}`);
-            if (!be) return;
-            ctx.save();
-            ctx.globalAlpha = 0.85;
-            ctx.fillStyle = "#000";
-            ctx.beginPath();
-            ctx.roundRect(bx, y + 4, 16, 16, 3);
-            ctx.fill();
-            ctx.globalAlpha = 1;
-            ctx.fillStyle = colorMap[type];
-            ctx.font = "bold 12px sans-serif";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(iconMap[type], bx + 8, y + 12);
-            ctx.restore();
-            bx += 18;
-          });
-        }
-        const overlay = el.querySelector(".overlay");
-        if (overlay) {
-          const t = overlay.querySelector(".title")?.textContent || "";
-          const m = overlay.querySelector(".meta")?.textContent || "";
-          ctx.save();
-          ctx.fillStyle = "rgba(0,0,0,0.7)";
-          ctx.fillRect(x, y + ih - 50, iw, 50);
-          ctx.fillStyle = "#fff";
-          ctx.font = "bold 14px sans-serif";
-          ctx.textAlign = "left";
-          ctx.textBaseline = "bottom";
-          ctx.fillText(t.substring(0, 30), x + 6, y + ih - 26);
-          ctx.fillStyle = "#9ab";
-          ctx.font = "11px sans-serif";
-          ctx.fillText(m, x + 6, y + ih - 8);
-          ctx.restore();
-        }
+      }
+      ctx.restore();
+    }
+
+    function svgToImage(svgText) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = 'data:image/svg+xml,' + encodeURIComponent(svgText);
       });
+    }
+
+    async function draw() {
+      for (let i = 0; i < els.length; i++) {
+        const col = i % cols, row = Math.floor(i / cols);
+        await renderCell(els[i], col, row);
+      }
       cv.toBlob(blob => resolve(blob), `image/${fmt === "png" ? "png" : "jpeg"}`, 0.92);
     }
 
@@ -231,7 +319,7 @@ function getCanvasBlob(fmt) {
       const img = el.querySelector("img");
       return img && !(img.complete && img.naturalWidth > 0);
     });
-    if (!pending.length) return draw();
+    if (!pending.length) { draw(); return; }
     let c = 0;
     pending.forEach(el => {
       const img = el.querySelector("img");
@@ -283,12 +371,14 @@ async function copyImage() {
 async function shareImage() {
   smartlinkClick();
   try {
+    const period = document.getElementById("period-select").value;
+    const periodTxt = period === "all" ? t("allTime") : t("periodPrefix") + " " + t("periodLabel")[period];
+    const shareTxt = t("shareText") + " (" + periodTxt + ") — " + t("siteLink");
     const blob = await getCanvasBlob("png");
     const file = new File([blob], "boxdgrid.png", { type: "image/png" });
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: "boxdgrid", text: "Minha colagem de filmes no Letterboxd" });
+      await navigator.share({ files: [file], title: "boxdgrid", text: shareTxt });
     } else {
-      // fallback: download
       downloadImage("png");
     }
   } catch {}
@@ -305,7 +395,7 @@ async function generateGrid() {
   const info = document.getElementById("grid-info");
 
   if (!username) {
-    error.textContent = "Digite seu username do Letterboxd.";
+    error.textContent = t("errorUser");
     error.classList.add("visible");
     return;
   }
@@ -321,21 +411,21 @@ async function generateGrid() {
     const res = await fetch(`/api/rss?username=${encodeURIComponent(username)}`);
     if (!res.ok) {
       const d = await res.json().catch(() => ({}));
-      throw new Error(d.error || "Usuario nao encontrado ou RSS indisponivel.");
+      throw new Error(d.error || t("errorRSS"));
     }
     let items = parseRSS(await res.text());
 
     // Filter out lists — only diary entries with a watched date
     items = items.filter(i => i.watchedDate);
-    if (!items.length) throw new Error("Nenhum filme no diario desse usuario.");
+    if (!items.length) throw new Error(t("errorNoDiary"));
 
     if (period !== "all") {
       items = items.filter(i => withinDays(i.watchedDate, parseInt(period)));
     }
-    if (!items.length) throw new Error("Nenhum filme encontrado nesse periodo.");
+    if (!items.length) throw new Error(t("errorNoPeriod"));
 
     if (group === "director") {
-      loading.querySelector("p").textContent = "Buscando informacoes dos diretores...";
+      loading.querySelector("p").textContent = t("loadingDir");
       const map = new Map();
       for (const item of items) {
         const dir = await getDirector(item);
@@ -350,9 +440,8 @@ async function generateGrid() {
     cachedItems = display;
     renderGrid(display, gridSize);
 
-    const labels = { "7": "7 dias", "30": "30 dias", "90": "3 meses", "180": "6 meses", "365": "1 ano", "all": "todo historico" };
-    const label = group === "director" ? "diretores" : "filmes";
-    const txt = `${display.length} ${label} \u00B7 ${labels[period] || period}`;
+    const label = group === "director" ? t("labelDir") : t("labelFilm");
+    const txt = `${display.length} ${label} \u00B7 ${t("periodLabel")[period] || period}`;
     info.textContent = txt;
     output.classList.add("visible");
 
@@ -363,7 +452,7 @@ async function generateGrid() {
   } finally {
     loading.classList.remove("visible");
     const lp = loading.querySelector("p");
-    if (lp) lp.textContent = "Buscando seus filmes...";
+    if (lp) lp.textContent = t("loading");
   }
 }
 
@@ -401,6 +490,11 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("download-jpg").addEventListener("click", () => downloadImage("jpg"));
   document.getElementById("copy-btn").addEventListener("click", copyImage);
   document.getElementById("share-btn").addEventListener("click", shareImage);
+  document.getElementById("lang-btn").addEventListener("click", () => {
+    lang = lang === "pt" ? "en" : "pt";
+    applyLang();
+    saveState({ lang });
+  });
   document.querySelectorAll(".tag input").forEach(cb => {
     cb.addEventListener("change", () => saveState({ shows: getShowFlags() }));
   });
