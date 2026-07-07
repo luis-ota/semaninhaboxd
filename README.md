@@ -2,6 +2,8 @@
 
 Gere colagens personalizadas dos filmes que voce assistiu no Letterboxd. Escolha periodo, tamanho do grid, agrupe por diretor e baixe como PNG ou JPG.
 
+**Acesse:** [boxdgrid.wired.rs](https://boxdgrid.wired.rs)
+
 ## Funcionalidades
 
 - Importa seu diario do Letterboxd via RSS publico

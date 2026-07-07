@@ -280,8 +280,8 @@ function getCanvasBlob(fmt) {
         const svgText = ratingEl.innerHTML;
         const img = await svgToImage(svgText, color);
         if (img) {
-          const rw = Math.min(img.naturalWidth * (9 / img.naturalHeight), iw - 12);
-          ctx.drawImage(img, bbx, bby, rw, 9);
+          const rw = Math.min(img.naturalWidth * (10 / img.naturalHeight), iw - 12);
+          ctx.drawImage(img, bbx, bby, rw, 10);
           bbx += rw + 4;
         }
       }
