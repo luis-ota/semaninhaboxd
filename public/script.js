@@ -334,22 +334,8 @@ function getCanvasBlob(fmt) {
   });
 }
 
-const SMARTLINK = "https://www.effectivecpmnetwork.com/tfm84s4e6a?key=a0917091db28caa0a680bad911c9473b";
-let smartlinkReady = true;
-
-function smartlinkClick() {
-  if (smartlinkReady) {
-    smartlinkReady = false;
-    window.open(SMARTLINK, "_blank");
-  }
-}
-
-function resetSmartlink() {
-  smartlinkReady = true;
-}
 
 async function downloadImage(fmt) {
-  smartlinkClick();
   try {
     const blob = await getCanvasBlob(fmt);
     const a = document.createElement("a");
@@ -361,7 +347,6 @@ async function downloadImage(fmt) {
 }
 
 async function copyImage() {
-  smartlinkClick();
   try {
     const blob = await getCanvasBlob("png");
     await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
@@ -408,7 +393,6 @@ async function generateGrid() {
     return;
   }
 
-  resetSmartlink();
   error.classList.remove("visible");
   output.classList.remove("visible");
   loading.classList.add("visible");
