@@ -148,6 +148,68 @@ Bun.serve({
       });
     }
 
+    // Batch directors from Letterboxd film pages (JSON-LD) — cached 24h
+    if (url.pathname === "/api/directors") {
+      const filmUrls = [...new Set(url.searchParams.getAll("url"))]
+        .filter(u => {
+          try {
+            const p = new URL(u);
+            return p.protocol === "https:" && p.hostname === "letterboxd.com" && p.pathname.includes("/film/");
+          } catch { return false; }
+        })
+        .slice(0, 40);
+      if (!filmUrls.length) {
+        return new Response(JSON.stringify({ error: "No valid letterboxd film urls" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        });
+      }
+      async function fetchDirector(filmUrl: string): Promise<string | null> {
+        const res = await cached(`director:${filmUrl}`, 86_400_000, async () => {
+          const page = await fetch(filmUrl, {
+            headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:132.0) Gecko/20100101 Firefox/132.0" },
+            redirect: "follow",
+            signal: AbortSignal.timeout(5000),
+          });
+          if (!page.ok) return new Response("not found", { status: 404 });
+          const html = await page.text();
+          let director: string | null = null;
+          const blocks = html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/g);
+          for (const b of blocks) {
+            try {
+              const json = b[1].replace(/\/\*\s*<!\[CDATA\[\s*\*\/|\/\*\s*\]\]>\s*\*\//g, "");
+              const ld = JSON.parse(json);
+              for (const obj of Array.isArray(ld) ? ld : [ld]) {
+                const d = obj?.director;
+                if (Array.isArray(d) && d.length) {
+                  director = d.map((p: any) => p?.name).filter(Boolean).join(", ");
+                  break;
+                }
+              }
+            } catch {}
+            if (director) break;
+          }
+          return new Response(JSON.stringify({ director }), {
+            headers: { "Content-Type": "application/json" },
+          });
+        });
+        if (!res.ok) return null;
+        try { return (await res.json()).director ?? null; } catch { return null; }
+      }
+      const out: Record<string, string | null> = {};
+      let idx = 0;
+      async function worker() {
+        while (idx < filmUrls.length) {
+          const u = filmUrls[idx++];
+          out[u] = await fetchDirector(u);
+        }
+      }
+      await Promise.all(Array.from({ length: Math.min(6, filmUrls.length) }, worker));
+      return new Response(JSON.stringify(out), {
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+    }
+
     // Proxy poster images (Letterboxd CDN has no CORS)
     if (url.pathname === "/api/poster") {
       const imgUrl = url.searchParams.get("url");

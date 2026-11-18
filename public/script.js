@@ -19,6 +19,7 @@ const LANG = {
     groupLabel: "Agrupar",
     groupFilm: "Filme",
     groupDir: "Diretor(a)",
+    noDirector: "Sem diretor",
     gridLabel: "Grid",
     showLabel: "Mostrar",
     showRating: "Nota",
@@ -55,6 +56,7 @@ const LANG = {
     groupLabel: "Group by",
     groupFilm: "Film",
     groupDir: "Director",
+    noDirector: "No director",
     gridLabel: "Grid",
     showLabel: "Show",
     showRating: "Rating",
@@ -151,6 +153,7 @@ function parseRSS(xmlText) {
     const description = txt(item.querySelector("description"));
     const img = description.match(/<img[^>]+src=["']([^"']+)["']/);
     const guid = txt(item.querySelector("guid"));
+    const filmUrl = txt(item.querySelector("link"));
     const watchedDate = item.getElementsByTagNameNS(nsL, "watchedDate")[0]?.textContent || "";
 
     return {
@@ -162,6 +165,7 @@ function parseRSS(xmlText) {
       rewatch: (item.getElementsByTagNameNS(nsL, "rewatch")[0]?.textContent || "no").toLowerCase() === "yes",
       hasReview: guid.startsWith("letterboxd-review"),
       tmdbId: item.getElementsByTagNameNS(nsT, "movieId")[0]?.textContent || "",
+      filmUrl,
       posterUrl: img ? `/api/poster?url=${encodeURIComponent(img[1])}` : "",
     };
   });
@@ -419,9 +423,11 @@ async function generateGrid() {
 
     if (group === "director") {
       loading.querySelector("p").textContent = t("loadingDir");
+      const dirMap = await fetchDirectorsBatch(items);
       const map = new Map();
       for (const item of items) {
-        const dir = await getDirector(item);
+        if (item.filmUrl && dirMap[item.filmUrl]) item._director = dirMap[item.filmUrl];
+        const dir = item._director || await getDirector(item);
         if (!map.has(dir)) map.set(dir, { ...item, _director: dir, count: 1 });
         else map.get(dir).count++;
       }
@@ -454,8 +460,21 @@ function withinDays(dateStr, days) {
   return (Date.now() - new Date(dateStr).getTime()) / 864e5 <= days;
 }
 
+async function fetchDirectorsBatch(items) {
+  const urls = [...new Set(items.map(i => i.filmUrl).filter(Boolean))].slice(0, 40);
+  const map = {};
+  if (!urls.length) return map;
+  try {
+    const qs = urls.map(u => "url=" + encodeURIComponent(u)).join("&");
+    const res = await fetch(`/api/directors?${qs}`);
+    if (res.ok) Object.assign(map, await res.json());
+  } catch {}
+  return map;
+}
+
 async function getDirector(item) {
   if (item._director) return item._director;
+  // Fallback legado: só útil se houver TMDb_API_KEY no servidor
   const id = item.tmdbId;
   if (id) {
     try {
@@ -466,14 +485,7 @@ async function getDirector(item) {
       }
     } catch {}
   }
-  try {
-    const r = await fetch(`/api/tmdb-search?title=${encodeURIComponent(item.filmTitle)}&year=${item.year}`);
-    if (r.ok) {
-      const d = await r.json();
-      if (d.director) return item._director = d.director;
-    }
-  } catch {}
-  return item._director = "Unknown";
+  return item._director = t("noDirector");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
