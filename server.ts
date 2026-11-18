@@ -180,7 +180,7 @@ Bun.serve({
               const json = b[1].replace(/\/\*\s*<!\[CDATA\[\s*\*\/|\/\*\s*\]\]>\s*\*\//g, "");
               const ld = JSON.parse(json);
               for (const obj of Array.isArray(ld) ? ld : [ld]) {
-                const d = obj?.director;
+                const d = obj?.director || obj?.itemReviewed?.director;
                 if (Array.isArray(d) && d.length) {
                   director = d.map((p: any) => p?.name).filter(Boolean).join(", ");
                   break;
