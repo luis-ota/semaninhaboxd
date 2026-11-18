@@ -27,6 +27,7 @@ const LANG = {
     showReview: "Resenha",
     showRewatch: "Reviu",
     labelFilm: "filmes",
+    labelFilm1: "filme",
     labelDir: "diretores",
     errorUser: "Digite seu username do Letterboxd.",
     errorRSS: "Usu\u00E1rio n\u00E3o encontrado ou RSS indispon\u00EDvel.",
@@ -64,6 +65,7 @@ const LANG = {
     showReview: "Review",
     showRewatch: "Rewatch",
     labelFilm: "films",
+    labelFilm1: "film",
     labelDir: "directors",
     errorUser: "Enter your Letterboxd username.",
     errorRSS: "User not found or RSS unavailable.",
@@ -153,7 +155,7 @@ function parseRSS(xmlText) {
     const description = txt(item.querySelector("description"));
     const img = description.match(/<img[^>]+src=["']([^"']+)["']/);
     const guid = txt(item.querySelector("guid"));
-    const filmUrl = txt(item.querySelector("link"));
+    const filmUrl = txt(item.querySelector("link")).replace(/\/film\/([^/]+)\/\d+\/$/, "/film/$1/");
     const watchedDate = item.getElementsByTagNameNS(nsL, "watchedDate")[0]?.textContent || "";
 
     return {
@@ -437,6 +439,7 @@ async function generateGrid() {
             ...item,
             filmTitle: dir,
             year: "",
+            _director: undefined,
             _portrait: info?.portrait || null,
             count: 1,
             _ratingSum: item.rating || 0,
@@ -446,7 +449,7 @@ async function generateGrid() {
       }
       items = [...map.values()].sort((a, b) => b.count - a.count).map(g => {
         g.rating = g._ratingN ? Math.round((g._ratingSum / g._ratingN) * 2) / 2 : 0;
-        g.year = `${g.count} ${t("labelFilm")}`;
+        g.year = `${g.count} ${g.count === 1 ? t("labelFilm1") : t("labelFilm")}`;
         if (g._portrait) g.posterUrl = `/api/poster?url=${encodeURIComponent(g._portrait)}`;
         return g;
       });
@@ -479,14 +482,16 @@ function withinDays(dateStr, days) {
 }
 
 async function fetchDirectorsBatch(items) {
-  const urls = [...new Set(items.map(i => i.filmUrl).filter(Boolean))].slice(0, 40);
+  const urls = [...new Set(items.map(i => i.filmUrl).filter(Boolean))];
   const map = {};
-  if (!urls.length) return map;
-  try {
-    const qs = urls.map(u => "url=" + encodeURIComponent(u)).join("&");
-    const res = await fetch(`/api/directors?${qs}`);
-    if (res.ok) Object.assign(map, await res.json());
-  } catch {}
+  for (let i = 0; i < urls.length; i += 40) {
+    const chunk = urls.slice(i, i + 40);
+    try {
+      const qs = chunk.map(u => "url=" + encodeURIComponent(u)).join("&");
+      const res = await fetch(`/api/directors?${qs}`);
+      if (res.ok) Object.assign(map, await res.json());
+    } catch {}
+  }
   return map;
 }
 

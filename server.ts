@@ -77,6 +77,7 @@ Bun.serve({
     }
 
     // Proxy Letterboxd RSS — cached 5 min
+    const normalizeFilmUrl = (u: string) => u.replace(/\/film\/([^/]+)\/\d+\/$/, "/film/$1/");
     if (url.pathname === "/api/rss") {
       const username = url.searchParams.get("username");
       if (!username) return new Response("Missing username", { status: 400 });
@@ -150,7 +151,7 @@ Bun.serve({
 
     // Batch directors from Letterboxd film pages (JSON-LD) — cached 24h
     if (url.pathname === "/api/directors") {
-      const filmUrls = [...new Set(url.searchParams.getAll("url"))]
+      const filmUrls = [...new Set(url.searchParams.getAll("url").map(normalizeFilmUrl))]
         .filter(u => {
           try {
             const p = new URL(u);
@@ -164,14 +165,25 @@ Bun.serve({
           headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
         });
       }
+      async function fetchFilmPage(filmUrl: string): Promise<Response | null> {
+        const get = (u: string) => fetch(u, {
+          headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:132.0) Gecko/20100101 Firefox/132.0" },
+          redirect: "follow",
+          signal: AbortSignal.timeout(5000),
+        });
+        const res = await get(filmUrl);
+        if (res.ok) return res;
+        const canonical = filmUrl.match(/\/film\/([^/]+)\//);
+        if (canonical) {
+          const cres = await get(`https://letterboxd.com/film/${canonical[1]}/`);
+          if (cres.ok) return cres;
+        }
+        return null;
+      }
       async function fetchDirector(filmUrl: string): Promise<{ name: string | null; portrait: string | null }> {
         const res = await cached(`director:${filmUrl}`, 86_400_000, async () => {
-          const page = await fetch(filmUrl, {
-            headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:132.0) Gecko/20100101 Firefox/132.0" },
-            redirect: "follow",
-            signal: AbortSignal.timeout(5000),
-          });
-          if (!page.ok) return new Response(JSON.stringify({ name: null, portrait: null }), {
+          const page = await fetchFilmPage(filmUrl);
+          if (!page) return new Response(JSON.stringify({ name: null, portrait: null }), {
             headers: { "Content-Type": "application/json" },
           });
           const html = await page.text();
