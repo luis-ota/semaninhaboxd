@@ -164,16 +164,19 @@ Bun.serve({
           headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
         });
       }
-      async function fetchDirector(filmUrl: string): Promise<string | null> {
+      async function fetchDirector(filmUrl: string): Promise<{ name: string | null; portrait: string | null }> {
         const res = await cached(`director:${filmUrl}`, 86_400_000, async () => {
           const page = await fetch(filmUrl, {
             headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:132.0) Gecko/20100101 Firefox/132.0" },
             redirect: "follow",
             signal: AbortSignal.timeout(5000),
           });
-          if (!page.ok) return new Response("not found", { status: 404 });
+          if (!page.ok) return new Response(JSON.stringify({ name: null, portrait: null }), {
+            headers: { "Content-Type": "application/json" },
+          });
           const html = await page.text();
-          let director: string | null = null;
+          let name: string | null = null;
+          let directorPage: string | null = null;
           const blocks = html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/g);
           for (const b of blocks) {
             try {
@@ -182,19 +185,44 @@ Bun.serve({
               for (const obj of Array.isArray(ld) ? ld : [ld]) {
                 const d = obj?.director || obj?.itemReviewed?.director;
                 if (Array.isArray(d) && d.length) {
-                  director = d.map((p: any) => p?.name).filter(Boolean).join(", ");
+                  name = d.map((p: any) => p?.name).filter(Boolean).join(", ");
+                  const sameAs = d.map((p: any) => p?.sameAs).find(u => {
+                    if (typeof u !== "string" || !u) return false;
+                    try {
+                      const p = new URL(u, "https://letterboxd.com");
+                      return p.protocol === "https:" && p.hostname === "letterboxd.com" && p.pathname.includes("/director/");
+                    } catch { return false; }
+                  });
+                  if (sameAs) directorPage = new URL(sameAs, "https://letterboxd.com").href;
                   break;
                 }
               }
             } catch {}
-            if (director) break;
+            if (name) break;
           }
-          return new Response(JSON.stringify({ director }), {
+          let portrait: string | null = null;
+          if (directorPage) {
+            try {
+              const dres = await fetch(directorPage, {
+                headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:132.0) Gecko/20100101 Firefox/132.0" },
+                redirect: "follow",
+                signal: AbortSignal.timeout(5000),
+              });
+              if (dres.ok) {
+                const dhtml = await dres.text();
+                portrait = dhtml.match(/js-tmdb-person[^>]*data-image=["']([^"']+)["']/)?.[1] || null;
+              }
+            } catch {}
+          }
+          return new Response(JSON.stringify({ name, portrait }), {
             headers: { "Content-Type": "application/json" },
           });
         });
-        if (!res.ok) return null;
-        try { return (await res.json()).director ?? null; } catch { return null; }
+        if (!res.ok) return { name: null, portrait: null };
+        try {
+          const d = await res.json();
+          return { name: d?.name ?? null, portrait: d?.portrait ?? null };
+        } catch { return { name: null, portrait: null }; }
       }
       const out: Record<string, string | null> = {};
       let idx = 0;

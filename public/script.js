@@ -426,12 +426,30 @@ async function generateGrid() {
       const dirMap = await fetchDirectorsBatch(items);
       const map = new Map();
       for (const item of items) {
-        if (item.filmUrl && dirMap[item.filmUrl]) item._director = dirMap[item.filmUrl];
-        const dir = item._director || await getDirector(item);
-        if (!map.has(dir)) map.set(dir, { ...item, _director: dir, count: 1 });
-        else map.get(dir).count++;
+        const info = item.filmUrl ? dirMap[item.filmUrl] : null;
+        const dir = info?.name || (item._director || await getDirector(item));
+        const g = map.get(dir);
+        if (g) {
+          g.count++;
+          if (item.rating) { g._ratingSum += item.rating; g._ratingN++; }
+        } else {
+          map.set(dir, {
+            ...item,
+            filmTitle: dir,
+            year: "",
+            _portrait: info?.portrait || null,
+            count: 1,
+            _ratingSum: item.rating || 0,
+            _ratingN: item.rating ? 1 : 0,
+          });
+        }
       }
-      items = [...map.values()].sort((a, b) => b.count - a.count);
+      items = [...map.values()].sort((a, b) => b.count - a.count).map(g => {
+        g.rating = g._ratingN ? Math.round((g._ratingSum / g._ratingN) * 2) / 2 : 0;
+        g.year = `${g.count} ${t("labelFilm")}`;
+        if (g._portrait) g.posterUrl = `/api/poster?url=${encodeURIComponent(g._portrait)}`;
+        return g;
+      });
     }
 
     const cap = gridSize * gridSize;
