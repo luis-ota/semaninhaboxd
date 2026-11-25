@@ -20,7 +20,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: instabox-medium
     permissions:
       contents: read
       packages: write
@@ -62,7 +62,7 @@ jobs:
   deploy:
     name: Deploy production (Coolify)
     needs: [build]
-    runs-on: ubuntu-latest
+    runs-on: instabox-medium
     steps:
       - name: Trigger Coolify deploy
         env:
